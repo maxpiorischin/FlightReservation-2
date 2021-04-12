@@ -1,9 +1,7 @@
 //Maxim Piorischin 501015327
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Random;
-import java.util.Scanner;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.*;
 
 
 public class FlightManager
@@ -12,15 +10,10 @@ public class FlightManager
 	ArrayList<Flight> flights = new ArrayList<Flight>();
   
   String[] cities = 	{"Dallas", "New York", "London", "Paris", "Tokyo"};
-  final int DALLAS = 0;  final int NEWYORK = 1;  final int LONDON = 2;  final int PARIS = 3; final int TOKYO = 4;
+
+  Map<String, Integer> flightTimeMap = new HashMap<>(); //Using a map to set the times for each flight duration! Destination name is the key, and the duration is the value.
   
   // flight times in hours
-  int[] flightTimes = { 3, // Dallas
-  											1, // New York
-  											7, // London
-  											8, // Paris
-  											16// Tokyo
-  										};
   
   // Contains list of available airplane types and their seat capacity
   ArrayList<Aircraft> airplanes = new ArrayList<Aircraft>();
@@ -28,57 +21,55 @@ public class FlightManager
   Random random = new Random(); // random number generator - google "Java class Random". Use this in generateFlightNumber
   
   
-  public FlightManager()
-  {
-  	// DO NOT ALTER THIS CODE - THE TA'S WILL USE IT TO TEST YOUR PROGRAM
-  	// IN ASSIGNMENT 2 YOU WILL BE LOADING THIS INFORMATION FROM A FILE
-  
-  	// Create some aircraft types with max seat capacities
-  	airplanes.add(new Aircraft(85, "Boeing 737"));
-  	airplanes.add(new Aircraft(180,"Airbus 320"));
-  	airplanes.add(new Aircraft(37, "Dash-8 100"));
-  	airplanes.add(new Aircraft(12, "Bombardier 5000"));
-  	airplanes.add(new Aircraft(592, 14, "Boeing 747"));
-  	
-  	// Populate the list of flights with some random test flights
-  	String flightNum = generateFlightNumber("United Airlines");
-  	Flight flight = new Flight(flightNum, "United Airlines", "Dallas", "1400", flightTimes[DALLAS], airplanes.get(0));
-  	flights.add(flight);
-  	flight.setStatus(Flight.Status.DELAYED);
-  	
-   	flightNum = generateFlightNumber("Air Canada");
-   	flight = new Flight(flightNum, "Air Canada", "London", "2300", flightTimes[LONDON], airplanes.get(1));
-   	flights.add(flight);
-   	
-   	flightNum = generateFlightNumber("Air Canada");
-   	flight = new Flight(flightNum, "Air Canada", "Paris", "2200", flightTimes[PARIS], airplanes.get(1));
-   	flights.add(flight);
-   	
-   	flightNum = generateFlightNumber("Porter Airlines");
-   	flight = new Flight(flightNum, "Porter Airlines", "New York", "1200", flightTimes[NEWYORK], airplanes.get(2));
-   	flights.add(flight);
-   	
-   	flightNum = generateFlightNumber("United Airlines");
-   	flight = new Flight(flightNum, "United Airlines", "New York", "0900", flightTimes[NEWYORK], airplanes.get(3));
-   	flights.add(flight);
-   	flight.setStatus(Flight.Status.INFLIGHT);
-   	
-   	flightNum = generateFlightNumber("Air Canada");
-   	flight = new Flight(flightNum, "Air Canada", "New York", "0600", flightTimes[NEWYORK], airplanes.get(2));
-   	flights.add(flight);
-   	flight.setStatus(Flight.Status.INFLIGHT);
-   	
-   	
-   	flightNum = generateFlightNumber("United Airlines");
-   	flight = new Flight(flightNum, "United Airlines", "Paris", "2330", flightTimes[PARIS], airplanes.get(0));
-   	flights.add(flight);
-   	
-    /*
-     * Add this code back in when you are ready to tackle class LongHaulFlight and have implemented its methods
-     */
-   	flightNum = generateFlightNumber("Air Canada");
-   	flight = new LongHaulFlight(flightNum, "Air Canada", "Tokyo", "2200", flightTimes[TOKYO], airplanes.get(4));
-   	flights.add(flight);
+  public FlightManager() {
+
+      // Create some aircraft types with max seat capacities
+      airplanes.add(new Aircraft(88, "Boeing 737"));
+      airplanes.add(new Aircraft(160, "Airbus 320"));
+      airplanes.add(new Aircraft(36, "Dash-8 100"));
+      airplanes.add(new Aircraft(12, "Bombardier 5000"));
+      airplanes.add(new Aircraft(444, 16, "Boeing 747"));
+
+      flightTimeMap.put("DALLAS", 3);
+      flightTimeMap.put("NEWYORK", 1);
+      flightTimeMap.put("LONDON", 7);
+      flightTimeMap.put("PARIS", 8);
+      flightTimeMap.put("TOKYO", 16);
+
+      // generate flights
+      String flightNum;
+      Flight flight;
+      Aircraft airplaneToUse = null;
+      try {
+          Scanner scanner = new Scanner(new File("src\\flights.txt"));
+          while (scanner.hasNextLine()) {
+              String line = scanner.nextLine();
+              Scanner lineScanner = new Scanner(line);
+              String airline = lineScanner.next().replaceAll("_", " ");
+              String des = lineScanner.next().replaceAll("_", " ");
+              String dep = lineScanner.next();
+              String capacity = lineScanner.next();
+              int dur = flightTimeMap.get(des.replaceAll(" ", "").toUpperCase());
+              for (Aircraft aircraft : airplanes){
+                  if (aircraft.getNumSeats() > Integer.parseInt(capacity)){
+                      airplaneToUse = aircraft;
+                      break;
+                  }
+              }
+
+              flightNum = generateFlightNumber(airline);
+              if (dur > 10) { //todo check what durarion is considered long haul
+                  flight = new LongHaulFlight(flightNum, airline, des, dep, dur, airplaneToUse);
+              }
+              else{
+                  flight = new Flight(flightNum, airline, des, dep, dur, airplaneToUse);
+              }
+              flights.add(flight);
+          }
+      }
+      catch (FileNotFoundException f){
+          System.out.println(f.getMessage());
+      }
   }
   
   /*

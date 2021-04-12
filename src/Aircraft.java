@@ -14,6 +14,7 @@ public class Aircraft implements Comparable<Aircraft>
   int numFirstClassSeats;
   
   String model;
+  String[][] seatLayout;
   
   public Aircraft(int seats, String model) // default constructor for non firstclass flights
   {

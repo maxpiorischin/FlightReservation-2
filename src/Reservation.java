@@ -13,6 +13,9 @@ public class Reservation
 	String flightInfo;
 	boolean firstClass;
 	Passenger passenger;
+	String passengerName;
+	int passengerPassport;
+	String seat;
 	
 	
 	public Reservation(String flightNum, String info)
@@ -27,6 +30,18 @@ public class Reservation
 		this.flightInfo = info;
 		this.firstClass = false;
 		this.passenger = passenger;
+		this.passengerName = passenger.getName();
+		this.passengerPassport = passenger.getPassport();
+	}
+	public Reservation(String flightNum, String info, Passenger passenger, String seat)
+	{
+		this.flightNum = flightNum;
+		this.flightInfo = info;
+		this.firstClass = false;
+		this.passenger = passenger;
+		this.passengerName = passenger.getName();
+		this.passengerPassport = passenger.getPassport();
+		this.seat = seat;
 	}
 	
 	public boolean isFirstClass()
@@ -51,9 +66,28 @@ public class Reservation
 
 	public Passenger getPassenger(){return passenger;}
 
+	public String getPassengerName() {
+		return passengerName;
+	}
+
+	public int getPassengerPassport() {
+		return passengerPassport;
+	}
+
+	public String getSeat() {
+		return seat;
+	}
+
 	public void setFlightInfo(String flightInfo)
 	{
 		this.flightInfo = flightInfo;
+	}
+
+	public boolean equals(Reservation other){ //overrides the equals method toi compare for equality
+		if (other.getFlightNum().equals(flightNum) && other.getPassengerName().equals(passengerName) && other.getPassengerPassport() == passengerPassport){
+			return true;
+		}
+		return false;
 	}
 
 	public void print()

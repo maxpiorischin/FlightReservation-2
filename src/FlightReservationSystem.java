@@ -14,7 +14,12 @@ public class FlightReservationSystem
 	{
 		System.out.println("Flight System for one single day at YYZ Departing flights!!");
 		// Create a FlightManager object
-		manager = new FlightManager();
+		try { //catch exceptions in the initialization of the manager
+			manager = new FlightManager();
+		}
+		catch (Exception e){
+			System.out.println(e.getMessage());
+		}
 
 		// List of reservations that have been made
 		myReservations = new ArrayList<Reservation>();	// my flight reservations
