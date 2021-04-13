@@ -7,13 +7,13 @@ import java.util.*;
 public class FlightManager
 {
   // Contains list of Flights departing from Toronto in a single day
-	ArrayList<Flight> flights = new ArrayList<Flight>();
+  Map<String, Flight> flights = new TreeMap<>();
   
   String[] cities = 	{"Dallas", "New York", "London", "Paris", "Tokyo"};
 
   Map<String, Integer> flightTimeMap = new HashMap<>(); //Using a map to set the times for each flight duration! Destination name is the key, and the duration is the value.
   
-  // flight times in hours
+
   
   // Contains list of available airplane types and their seat capacity
   ArrayList<Aircraft> airplanes = new ArrayList<Aircraft>();
@@ -50,21 +50,27 @@ public class FlightManager
               String dep = lineScanner.next();
               String capacity = lineScanner.next();
               int dur = flightTimeMap.get(des.replaceAll(" ", "").toUpperCase());
-              for (Aircraft aircraft : airplanes){
-                  if (aircraft.getNumSeats() > Integer.parseInt(capacity)){
-                      airplaneToUse = aircraft;
-                      break;
-                  }
-              }
 
               flightNum = generateFlightNumber(airline);
               if (dur > 10) { //todo check what durarion is considered long haul
+                  for (Aircraft aircraft : airplanes){
+                      if (aircraft.getNumSeats() > Integer.parseInt(capacity) && aircraft.getNumFirstClassSeats() > 0){// find an aircraft with first class seats
+                          airplaneToUse = aircraft;
+                          break;
+                      }
+                  }
                   flight = new LongHaulFlight(flightNum, airline, des, dep, dur, airplaneToUse);
               }
               else{
+                  for (Aircraft aircraft : airplanes){
+                      if (aircraft.getNumSeats() > Integer.parseInt(capacity)){ //find an aircraft with the minimum required amount of seats
+                          airplaneToUse = aircraft;
+                          break;
+                      }
+                  }
                   flight = new Flight(flightNum, airline, des, dep, dur, airplaneToUse);
               }
-              flights.add(flight);
+              flights.put(flightNum, flight);
           }
       }
       catch (FileNotFoundException f){
@@ -99,8 +105,19 @@ public class FlightManager
      * */
   public void printAllFlights()
   {
-      for (Flight flight : flights) {
-          System.out.println(flight.toString());
+      for (String key : flights.keySet()){
+          System.out.println(flights.get(key));
+      }
+  }
+
+  public void printManifest(String flightnum){
+      for (String key : flights.keySet()){
+          Flight flight = flights.get(key);
+          if (flight.getFlightNum().equals(flightnum)){
+              for (Passenger passenger : flight.getManifest()){
+                  System.out.println(passenger.toManifString());
+              }
+          }
       }
   }
   
@@ -115,7 +132,8 @@ public class FlightManager
      * @return true if flight is successfully checked
      * */
   public boolean seatsAvailable(String flightNum) throws FlightNotFoundException, FlightFullException {
-      for (Flight flight : flights) {
+      for (String key : flights.keySet()){
+          Flight flight = flights.get(key);
           if (flight.getFlightNum().equals(flightNum)) {
               if (flight.seatsAvailable()) {
                   return true;
@@ -138,102 +156,53 @@ public class FlightManager
      * @throws DuplicateException if a duplicate passenger is found
      * @return reservation with parameters flightnum and flight.toString()
      * */
-  public Reservation reserveSeatOnFlightPSNGR(String flightNum, String name, int passport, String seatType) throws FlightFullException, FlightNotFoundException, DuplicateException {
-        for (Flight flight : flights) {
+  public Reservation reserveSeatOnFlightPSNGR(String flightNum, String name, int passport, String seatType, String seat) throws FlightFullException, FlightNotFoundException, DuplicateException, InvalidSeatException {
+      for (String key : flights.keySet()){
+          Flight flight = flights.get(key);
             if (flight.getFlightNum().equals(flightNum)) {
-                if (seatType.equals(LongHaulFlight.firstClass) && flight instanceof LongHaulFlight) {//firstclass
-                    LongHaulFlight longflight = (LongHaulFlight) flight; //cast to a long haul flight
-                    Passenger passenger = new Passenger(name, passport, generateSeatNum(longflight));
-                    if (longflight.reserveSeat(LongHaulFlight.firstClass)) {
-                        if (longflight.numFirstClassPassengers < longflight.aircraft.numFirstClassSeats) {
-                            Reservation newRes = new Reservation(flightNum, longflight.toString() + " " + passenger.toString() + "\n         FCL", passenger);
-                            newRes.setFirstClass();
-                            return newRes;
-                        } else {
-                            throw new DuplicateException();
-                        }
+                if (!isDuplicateSeat(seat, flight)) { //checks if seat already exists
+                    if (validSeat(seat, flight)) { // checks if seat is a valid seat
+                        if (seatType.equals(LongHaulFlight.firstClass) && flight instanceof LongHaulFlight) {//firstclass
+                            LongHaulFlight longflight = (LongHaulFlight) flight; //cast to a long haul flight
+                            Passenger passenger = new Passenger(name, passport, seat);
+                            if (longflight.reserveSeat(LongHaulFlight.firstClass, passenger)) {
+                                if (longflight.numFirstClassPassengers < longflight.aircraft.numFirstClassSeats) {
+                                    Reservation newRes = new Reservation(flightNum, longflight.toString() + " " + passenger.toString() + "\n         FCL", passenger);
+                                    newRes.setFirstClass();
+                                    return newRes;
+                                } else {
+                                    throw new FlightFullException(LongHaulFlight.firstClass, flightNum);
+                                }
 
-                    } else {
-                        throw new FlightFullException(LongHaulFlight.firstClass, flightNum);
-                    }
-                } else { //economy seat
-                    if (flight.seatsAvailable()) {
-                        Passenger passenger = new Passenger(name, passport, generateSeatNum(flight));
-                        if (flight.reserveSeat(passenger)) {
-                            return new Reservation(flightNum, flight.toString() + " " + passenger.toString(), passenger);
-                        } else {
-                            throw new DuplicateException();
+                            } else {
+                                throw new DuplicateException("Passenger");
+                            }
+                        } else { //economy seat
+                            if (flight.seatsAvailable()) {
+                                Passenger passenger = new Passenger(name, passport, seat);
+                                if (flight.reserveSeat(passenger)) {
+                                    return new Reservation(flightNum, flight.toString() + " " + passenger.toString(), passenger);
+                                } else {
+                                    throw new DuplicateException("Passenger");
+                                }
+                            } else {
+                                throw new FlightFullException(flightNum);
+                            }
                         }
-                    } else {
-                        throw new FlightFullException(flightNum);
                     }
+                    else{
+                        throw new InvalidSeatException(seat);
+                    }
+                }
+                else{
+                    throw new DuplicateException("Seat");
                 }
             }
             }
         throw new FlightNotFoundException(flightNum);
         }
 
-    /**
-     * Generate a seat number and ensure the same seat number does not already exist
-     * Create a list of numbers the size of the flight seats available
-     * Create a list of passenger seats number from passengers arraylist
-     * Remove the passenger seats from the numbers list, leaving with the seats available
-     * use Random to get a random number, use it as an index to get a random seat
-     * @param flight used to find amount of seats
-     * @return a random seat number
-     * */
-    public int generateSeatNum(Flight flight){
-      ArrayList<Integer> nums = new ArrayList<>();
-      for (int i = 1; i < flight.aircraft.getNumSeats(); i++){
-          nums.add(i);
-      }
-        ArrayList<Integer> nums1 = new ArrayList<>();
-      for (Passenger passenger : flight.getPassengerList()){
-          nums1.add(passenger.getSeatnum());
-      }
-      nums.removeAll(nums1);
-      int index = random.nextInt(nums.size());
-      return nums.get(index);
-    }
 
-
-  /*
-   * Given a Reservation object, cancel the seat on the flight
-   */
-    /**
-     * Cancel an existing reservation
-     * Check if economy, if it is, search through flights and use.cancelseat() on the one that matches flight number from res
-     * If first class, cast it too a Long Haul flight and cancel the seat from the long haul object
-     * @param res reservation for checking firstclass and finding flightnumber
-     * @return true if successful
-     * */
-  public boolean cancelReservation(Reservation res) {
-      // Get the flight number string from res
-      // Search flights to find the Flight object - if not found, set errorMsg variable and return false
-      // if found, cancel the seat on the flight (see class Flight)
-
-      // Once you have the above basic functionality working, try to get it working for canceling a first class reservation
-      // If this is a first class reservation (see class Reservation) and the flight is a LongHaulFlight (Hint use instanceof)
-      // then cancel the first class seat on the LongHaulFlight (Hint: you will need to cast)
-      if (!res.isFirstClass()) { // if economy
-          for (Flight flight : flights) {
-              if (flight.flightNum.equals(res.getFlightNum())) {
-                  flight.cancelSeat();
-                  return true;
-              }
-          }
-      }
-      else{
-          for (Flight flight : flights) {
-              if (flight.flightNum.equals(res.getFlightNum())) {
-                  LongHaulFlight longflight = (LongHaulFlight) flight;
-                  longflight.cancelSeat(LongHaulFlight.firstClass);
-                  return true;
-              }
-          }
-      }
-      return false;
-  }
     /**
      * Cancel an existing passenger reservation
      * search through flights and use.cancelseat() on the one that matches flight number from res
@@ -243,73 +212,70 @@ public class FlightManager
      * @return true if successful
      * */
     public boolean cancelReservationPSNGR(Reservation res, int passport, String name) {
-        for (Flight flight : flights) {
-            if (flight.flightNum.equals(res.getFlightNum())) {
-                flight.cancelSeatPSNGR(passport, name);
+        for (String key : flights.keySet()){
+            Flight flight = flights.get(key);
+            if (flight.getFlightNum().equals(res.getFlightNum())) {
+                if (res.isFirstClass()){
+                    LongHaulFlight longflight = (LongHaulFlight) flight;
+                    longflight.cancelSeat(LongHaulFlight.firstClass, passport, name);
+                }
+                else {
+                    flight.cancelSeatPSNGR(passport, name);
+                }
                 return true;
             }
         }
         return false;
     }
-  
-  // Sort the array list of flights by increasing departure time 
-  // Essentially one line of code but you will be making use of a Comparator object below
-    /**
-     * Sort the flights by departure time using the departure time comparator class
-     * */
-  public void sortByDeparture()
-  {
-      Collections.sort(flights, new DepartureTimeComparator());
-  }
-  // Write a simple inner class that implements the Comparator interface (NOTE: not *Comparable*)
-  // This means you will be able to compare two Flight objects by departure time
-  private class DepartureTimeComparator implements Comparator<Flight>
-  {
-      /**
-       * overrides compare() from comparator interface, compares using departure time
-       * @return 1 if object 1 departure time is greater, -1 if vice versa, 0 is equal
-       * */
-      @Override
-      public int compare(Flight o1, Flight o2) {
-          int o1time = Integer.parseInt(o1.getDepartureTime());
-          int o2time = Integer.parseInt(o2.getDepartureTime());
-          if (o1time > o2time){
-              return 1;
-          }
-          if (o1time < o2time){
-              return -1;
-          }
-          return 0;
-      }
-  }
-  //Sort the array list of flights by increasing flight duration  
-  // Essentially one line of code but you will be making use of a Comparator object below
-    /**
-     * Sort the flights by duration time using the duration time comparator class
-     * */
-  public void sortByDuration()
-  {
-	  Collections.sort(flights, new DurationComparator());
-  }
-  //Write a simple inner class that implements the Comparator interface (NOTE: not *Comparable*)
- // This means you will be able to compare two Flight objects by duration
-  private class DurationComparator implements Comparator<Flight> {
-      /**
-       * overrides compare() from comparator interface, compares using duration time
-       * @return 1 if object 1 duration time is greater, -1 if vice versa, 0 is equal
-       * */
-      @Override
-      public int compare(Flight o1, Flight o2) {
-          if (o1.getFlightDuration() > o2.getFlightDuration()) {
-              return 1;
-          }
-          if (o2.getFlightDuration() > o1.getFlightDuration()) {
-              return -1;
-          }
-          return 0;
 
-      }
-  }
+    public void printSeats(String flightnum) throws FlightNotFoundException {
+        boolean found = false;
+        for (String key : flights.keySet()) {
+            Flight flight = flights.get(key);
+            if (flight.getFlightNum().equals(flightnum)){
+                for (int i = 0; i < flight.getAircraft().getColumns(); i ++){
+                    for (int u = 0; u < flight.getAircraft().getRows(); u++){
+                        String seat = (flight.getAircraft().getSeatLayout()[i][u]);
+                        if (isDuplicateSeat(seat, flight)){
+                            System.out.print("XX ");
+                        }
+                        else{
+                            System.out.print(seat + " ");
+                        }
+
+                    }
+                    System.out.println();
+                }
+            }
+            found = true;
+        }
+        if (!found){
+            throw new FlightNotFoundException();
+        }
+        System.out.println("XX = Occupied    + = First Class");
+
+    }
+
+    public boolean isDuplicateSeat(String seat, Flight flight){
+        for (String key : flight.seatMap.keySet()){
+            if (key.equalsIgnoreCase(seat)){
+                return true;
+            }
+        }
+        return false;
+    }
+    public boolean validSeat(String seat, Flight flight){
+        String[][] arr = flight.getAircraft().getSeatLayout();
+        for (String[] arr1 : arr){
+            for (String elem : arr1){
+                if (elem.equalsIgnoreCase(seat)){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
   // Prints all aircraft in airplanes array list. 
   // See class Aircraft for a print() method
     /**

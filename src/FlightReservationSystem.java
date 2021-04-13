@@ -66,24 +66,20 @@ public class FlightReservationSystem
 						String lName = commandLine.next();
 						String name = fName.concat(lName);
 						int passport = commandLine.nextInt();
-						if (commandLine.hasNext()) {
-							if (commandLine.next().equalsIgnoreCase("FCL")) {
-								resSeat(flightNum, name, passport, LongHaulFlight.firstClass);
-							}
-							else{
-								resSeat(flightNum, name, passport, LongHaulFlight.economy);
-							}
+						String seat = commandLine.next();
+						if (Character.toString(seat.charAt(seat.length()-1)).equals("+")){ //check if last character of seat is a + indicating first class
+							resSeat(flightNum, name, passport, LongHaulFlight.firstClass, seat);
 						}
-
-						else {
-							resSeat(flightNum, name, passport, LongHaulFlight.economy);
+						else{ //economy
+							resSeat(flightNum, name, passport, LongHaulFlight.economy, seat);
 						}
 					}
 					catch(NoSuchElementException e){
-						System.out.println("Invalid Information, Format must be >respsngr flight# firstname lastname passport# (FCL)");
+						System.out.println("Invalid Information, Format must be >respsngr flight# firstname lastname passport# seat");
 					}
 				}
 			}
+
 			// Query the flight manager to see if seats are still available for a specific flight (example input: seats AC220)
 		  // This one is done for you as a guide for other commands
 			/**
@@ -97,21 +93,14 @@ public class FlightReservationSystem
 				{
 					flightNum = commandLine.next();
 					try {
-						manager.seatsAvailable(flightNum);
-						System.out.println("Seats are available");
+						manager.printSeats(flightNum);
 
 					}
-					catch (FlightFullException | FlightNotFoundException f) {
+					catch (FlightNotFoundException f) {
 						System.out.println(f.getMessage());
 					}
 				}
 			}
-        // get the flight number string from commandLine scanner (check if there is input first)
-				// Use the flight number to find the Reservation object in the myReservations array list
-				// If the reservation is found,  
-				// 		call cancelReservation() method in the flight manager
-				//    remove the reservation from myReservations
-				// If the reservation is not found, print a message (see video)
 
 			/**
 			 * get flightnum, firstname, lastname, passport number from scanner
@@ -122,7 +111,6 @@ public class FlightReservationSystem
 			 * */
 			else if (action.equalsIgnoreCase("CANCEL")) {//format must be >cancelpsngr AC101 Maxim Piorischin 123
 				String flightNum;
-				boolean exists = false;
 				if (commandLine.hasNext()) {
 					try {
 						flightNum = commandLine.next();
@@ -130,22 +118,7 @@ public class FlightReservationSystem
 						String lName = commandLine.next();
 						String name = fName.concat(lName);
 						int passport = commandLine.nextInt();
-						for (Reservation reservation : myReservations) {
-							if (reservation.getFlightNum().equals(flightNum) && name.equals(reservation.getPassenger().getName()) && passport == reservation.getPassenger().getPassport()) {
-								manager.cancelReservationPSNGR(reservation, passport, name);
-								myReservations.remove(reservation);
-								exists = true;
-								break;
-
-							}
-						}
-						try {
-							if (!exists) {
-								throw new ReservationNotFoundException();
-							}
-						} catch (ReservationNotFoundException e) {
-							System.out.println(e.getMessage());
-						}
+						cancSeat(flightNum, name, passport);
 					}
 					catch (NoSuchElementException e){
 						System.out.println("Invalid Information, Format must be >cancelpsngr flight# firstname lastname passport#");
@@ -162,26 +135,16 @@ public class FlightReservationSystem
 					reservation.print();
 				}
 			}
-			/**
-			 * iterate through passengers in a specified flight and print them out with .toString()
-			 * */
-			else if (action.equalsIgnoreCase("PSNGRS"))
-			{
-				try {
-					String flightnum = commandLine.next();
 
-					for (Flight flight : manager.flights) {
-						if (flight.getFlightNum().equals(flightnum)) {
-							for (Passenger passenger : flight.getPassengerList()) {
-								System.out.println(passenger.toString());
-							}
-						}
-					}
-				}
-				catch (NoSuchElementException e){
-					System.out.println("Invalid Information, Format must be >psngrs flight#");
+			else if (action.equalsIgnoreCase("PASMAN")){
+				if (commandLine.hasNext()){
+					String flightNum = commandLine.next();
+					manager.printManifest(flightNum);
 				}
 			}
+
+
+
 
 			// Print the list of aircraft (see class Manager)
 			else if (action.equalsIgnoreCase("CRAFT"))
@@ -198,26 +161,37 @@ public class FlightReservationSystem
 		  {
 		  	manager.sortAircraft();
 		  }
-		  else if (action.equalsIgnoreCase("SORTBYDEP"))
-		  {
-			  manager.sortByDeparture();
-			  
-		  }
-		  else if (action.equalsIgnoreCase("SORTBYDUR"))
-		  {
-			  manager.sortByDuration();
-		  }
-	  
+
 			System.out.print("\n>");
 		}
 	}
-	public static void resSeat(String flightNum, String name, int passport, String seatType){ // shortcut method for reserving a seat
+	public static void resSeat(String flightNum, String name, int passport, String seatType, String seat){ // shortcut method for reserving a seat
 		try {
-			Reservation reservation = manager.reserveSeatOnFlightPSNGR(flightNum, name, passport, seatType);
+			Reservation reservation = manager.reserveSeatOnFlightPSNGR(flightNum, name, passport, seatType, seat);
 			myReservations.add(reservation);
 			reservation.print();
-		} catch (FlightFullException | FlightNotFoundException | DuplicateException f) {
+		} catch (FlightFullException | FlightNotFoundException | DuplicateException | InvalidSeatException f) {
 			System.out.println(f.getMessage());
+		}
+	}
+
+	public static void cancSeat(String flightNum, String name, int passport){
+		boolean exists = false;
+		for (Reservation reservation : myReservations) {
+			if (reservation.getFlightNum().equals(flightNum) && name.equals(reservation.getPassenger().getName()) && passport == reservation.getPassenger().getPassport()) {
+				manager.cancelReservationPSNGR(reservation, passport, name);
+				myReservations.remove(reservation);
+				exists = true;
+				break;
+
+			}
+		}
+		try {
+			if (!exists) {
+				throw new ReservationNotFoundException();
+			}
+		} catch (ReservationNotFoundException e) {
+			System.out.println(e.getMessage());
 		}
 	}
 

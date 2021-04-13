@@ -1,5 +1,6 @@
 //Maxim Piorischin 501015327
 import java.util.ArrayList;
+import java.util.TreeMap;
 
 /*
  *  Class to model an airline flight. In this simple system, all flights originate from Toronto
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 public class Flight
 {
 	public enum Status {DELAYED, ONTIME, ARRIVED, INFLIGHT};
+	public enum FlightType {SHORTHAUL, MEDIUMHAUL, LONHAUL};
 
 	public String flightNum;
 	public String airline;
@@ -18,7 +20,9 @@ public class Flight
 	public int flightDuration;
 	public Aircraft aircraft;
 	protected int passengers; // count of (economy) passengers on this flight - initially 0
-	public ArrayList<Passenger> passengerList;
+	protected ArrayList<Passenger> manifest;
+	protected TreeMap<String, Passenger> seatMap;
+	public FlightType flightType;
   
 	public Flight()
 	{
@@ -29,9 +33,11 @@ public class Flight
 		this.departureTime = "0000";
 		this.flightDuration = 0;
 		this.aircraft = new Aircraft(0, "default");
-		passengers = 0;
-		status = Status.ONTIME;
-		passengerList = new ArrayList<>();
+		this.passengers = 0;
+		this.status = Status.ONTIME;
+		this.flightType = FlightType.MEDIUMHAUL;
+		this.manifest = new ArrayList<>();
+		this.seatMap = new TreeMap<>();
 
 		// write code to initialize instance variables to default values
 	}
@@ -46,9 +52,11 @@ public class Flight
 		this.departureTime = departure;
 		this.flightDuration = flightDuration;
 		this.aircraft = aircraft;
-		passengers = 0;
-		status = Status.ONTIME;
-		passengerList = new ArrayList<>(); // Arraylist holding all the Passenger objects
+		this.passengers = 0;
+		this.status = Status.ONTIME;
+		this.flightType = FlightType.MEDIUMHAUL;
+		this.manifest = new ArrayList<>(); // Arraylist holding all the Passenger objects
+		this.seatMap = new TreeMap<>();
 		
 	}
 	// Getter and setter Methods
@@ -92,7 +100,12 @@ public class Flight
 	{
 		this.departureTime = departureTime;
 	}
-	
+	public FlightType getFlightType() {
+		return flightType;
+	}
+	public void setFlightType(FlightType flightType) {
+		this.flightType = flightType;
+	}
 	public Status getStatus()
 	{
 		return status;
@@ -109,20 +122,29 @@ public class Flight
 	{
 		this.flightDuration = dur;
 	}
-	
 	public int getPassengers()
 	{
 		return passengers;
+	}
+
+	public Aircraft getAircraft() {
+		return aircraft;
+	}
+	public void setAircraft(Aircraft aircraft) {
+		this.aircraft = aircraft;
 	}
 	public void setPassengers(int passengers)
 	{
 		this.passengers = passengers;
 	}
+	public ArrayList<Passenger> getManifest(){return manifest;} // gets passenger list
+	public TreeMap<String, Passenger> getSeatMap() {
+		return seatMap;
+	}
+	public void setSeatMap(TreeMap<String, Passenger> seatMap) {
+		this.seatMap = seatMap;
+	}
 
-	public ArrayList<Passenger> getPassengerList(){return passengerList;} // gets passenger list
-	
-	// Check to see if there is room on this flight - compare current passenger count
-	// with aircraft max capacity of economy seats
 	/** Checks is seats are available by comparing aircraft seats with number of passengers
 	 * @return true if more seats that passengers, false otherwise
 	 * */
@@ -134,34 +156,21 @@ public class Flight
 		}
 		return false;
 	}
-	
-	/*
-	 * Cancel a seat - essentially reduce the passenger count by 1. Make sure the count does not
-	 * fall below 0 (see instance variable passenger)
-	 */
-	/**
-	 * Cancels a seat by subtracting 1 from passenger number
-	 *
-	 * */
-	public void cancelSeat()
-	{
-		if (passengers > 0) {
-			passengers -= 1;
-		}
-	}
+
 	/**
 	 * Cancels a seat and removes passenger from arraylist, by comparing name and passport passed in with iterated iterated list of passengers
 	 * @param passport passport to use in finding the Passenger
 	 * @param name name to use in finding the passenger
 	 *
 	 * */
-	public void cancelSeatPSNGR(int passport, String name)
+	public void cancelSeatPSNGR(int passport, String name) // todo FINISH BY REMOVing FROM MAP
 	{
 
 		if (passengers > 0) {
-			for (Passenger passenger : passengerList){
+			for (Passenger passenger : manifest){
 				if (passenger.getPassport() == passport && passenger.getName().equals(name)){
-					passengerList.remove(passenger);
+					manifest.remove(passenger);
+					seatMap.remove(passenger.getSeat());
 					passengers -= 1;
 					break;
 				}
@@ -169,25 +178,6 @@ public class Flight
 		}
 	}
 
-	
-	/*
-	 * reserve a seat on this flight - essentially increases the passenger count by 1 only if there is room for more
-	 * economy passengers on the aircraft used for this flight (see instance variables above)
-	 */
-	/**
-	 * Reserves a seat
-	 * adds 1 to passengers after ensuring seats are available
-	 * */
-	public boolean reserveSeat() // without passenger info
-	{
-		// your code here
-		if (this.seatsAvailable()){
-		passengers += 1;
-		return true;}
-		else{
-			return false;
-		}
-	}
 	/**
 	 *Reserves a seat but with a passenger
 	 * adds 1 to passengers
@@ -198,7 +188,8 @@ public class Flight
 	{
 			if (noDuplicate(passenger)){
 				passengers += 1;
-				passengerList.add(passenger);
+				manifest.add(passenger);
+				seatMap.put(passenger.getSeat(), passenger);
 			}
 			else{
 				return false;
@@ -207,6 +198,7 @@ public class Flight
 
 
 	}
+
 	/**
 	 * Checks if there already exists a passenger in the passengerlist
 	 * Iterates through passengerlist and uses passenger.equals(other passenger) to compare
@@ -214,7 +206,7 @@ public class Flight
 	 * @return true if the p passed in is not in the arraylist, false if its already in it
 	 * */
 	public boolean noDuplicate(Passenger p){
-		for (Passenger passenger : passengerList){
+		for (Passenger passenger : manifest){
 			if (passenger.equals(p)){
 				return false;
 			}

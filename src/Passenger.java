@@ -6,11 +6,11 @@
 public class Passenger {
     private String name;
     private int passport;
-    private int  seatnum;
-    public Passenger(String name, int passport, int seatnum){
+    private String seat;
+    public Passenger(String name, int passport, String seat){
         this.name = name;
         this.passport = passport;
-        this.seatnum = seatnum;
+        this.seat = seat;
     }
     /**
      * getter methods
@@ -21,8 +21,8 @@ public class Passenger {
     public int getPassport(){
         return passport;
     }
-    public int getSeatnum(){
-        return seatnum;
+    public String getSeat(){
+        return seat;
     }
 
     /**
@@ -39,6 +39,10 @@ public class Passenger {
      * method which returns a string of object information
      * */
     public String toString(){
-        return "Name: "+ this.name + " Passport Number: " + this.passport + " Seat Number: " + this.seatnum;
+        return "Name: "+ this.name + " Passport Number: " + this.passport + " Seat Number: " + this.seat;
+    }
+
+    public String toManifString(){
+        return this.name + " " + this.passport + " " + this.seat;
     }
 }

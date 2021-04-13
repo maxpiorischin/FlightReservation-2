@@ -17,6 +17,7 @@ public class LongHaulFlight extends Flight
 	{
 		super(flightNum, airline, dest, departure, flightDuration, aircraft);
 		numFirstClassPassengers = 0;
+		super.setFlightType(FlightType.LONHAUL);
 		// use the super() call to initialize all inherited variables
 		// also initialize the new instance variables 
 	}
@@ -25,6 +26,7 @@ public class LongHaulFlight extends Flight
 	{
      // default constructor
 		super();
+		super.setFlightType(FlightType.LONHAUL);
 		numFirstClassPassengers = 0;
 	}
 	
@@ -34,11 +36,11 @@ public class LongHaulFlight extends Flight
 	/**
 	 * call the reserveSeat() method under with economy constant string
 	 * */
-	public boolean reserveSeat()
+	public boolean reserveSeat(Passenger passenger, String seat)
 	{
 		// override the inherited reserveSeat method and call the reserveSeat method below with an economy seatType
 		// use the constants defined at the top
-		reserveSeat(economy);
+		reserveSeat(economy, passenger);
 		return true;
 	}
 
@@ -50,21 +52,15 @@ public class LongHaulFlight extends Flight
 	 * if first class, check if seats available and add 1 to firstclasspassengers
 	 * @return true if successful
 	 * */
-	public boolean reserveSeat(String seatType)
+	public boolean reserveSeat(String seatType, Passenger passenger)
 	{
-		// if seat type is economy 
-		//			call the superclass method reserveSeat() and return the result
-		// else if the seat type is first class then 
-		// 			check to see if there are more first class seats available (use the aircraft method to get the max first class seats
-		// 			of this airplane
-		//    	if there is a seat available, increment first class passenger count (see instance variable at the top of the class)
-		//    	return true;
-		// else return false
 		if (seatType.equals(economy)){
-			super.reserveSeat();
+			super.reserveSeat(passenger);
 		}
 		else { // first class
-			if (aircraft.getNumFirstClassSeats() > numFirstClassPassengers){
+			if (aircraft.getNumFirstClassSeats() > numFirstClassPassengers && noDuplicate(passenger)){
+				manifest.add(passenger);
+				seatMap.put(passenger.getSeat(), passenger);
 				numFirstClassPassengers += 1;
 				return true;
 			}
@@ -72,22 +68,13 @@ public class LongHaulFlight extends Flight
 		}
 		return true;
 	}
-	
-	// Cancel a seat
-	/**
-	 * call the cancelSeat() method under with economy constant string
-	 * */
-	public void cancelSeat()
-	{
-	  // override the inherited cancelSeat method and call the cancelSeat method below with an economy seatType
-		// use the constants defined at the top
-		cancelSeat(economy);
-	}
+
+
 	/**
 	 * if firstclass, decrease firstclasspassengers by 1
 	 * if economy, decrease passengers by 1
 	 * */
-	public void cancelSeat(String seatType)
+	public void cancelSeat(String seatType, int passport, String name)
 	{
 		// if seat type is first class and first class passenger count is > 0
 		//  decrement first class passengers
@@ -95,9 +82,17 @@ public class LongHaulFlight extends Flight
 		// decrement inherited (economy) passenger count
 
 			if (seatType.equals(firstClass) && numFirstClassPassengers > 0) {
-				numFirstClassPassengers -= 1;
+
+				for (Passenger passenger : manifest){
+					if (passenger.getPassport() == passport && passenger.getName().equals(name)){
+						manifest.remove(passenger);
+						seatMap.remove(passenger.getSeat());
+						numFirstClassPassengers -= 1;
+						break;
+					}
+				}
 			} else {
-				passengers -= 1;
+				super.cancelSeatPSNGR(passport, name);
 			}
 		}
 	// return the total passenger count of economy passengers *and* first class passengers

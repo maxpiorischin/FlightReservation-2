@@ -15,12 +15,18 @@ public class Aircraft implements Comparable<Aircraft>
   
   String model;
   String[][] seatLayout;
+  int rows;
+  int columns;
   
   public Aircraft(int seats, String model) // default constructor for non firstclass flights
   {
   	this.numEconomySeats = seats;
   	this.numFirstClassSeats = 0;
   	this.model = model;
+  	this.rows = 4;
+  	this.columns = numEconomySeats / rows;
+  	this.seatLayout = new String[columns][rows];
+  	initSeatLayout(rows, columns, numFirstClassSeats);
   }
 
   public Aircraft(int economy, int firstClass, String model) // Constructor for a firstclass flight
@@ -28,6 +34,10 @@ public class Aircraft implements Comparable<Aircraft>
   	this.numEconomySeats = economy;
   	this.numFirstClassSeats = firstClass;
   	this.model = model;
+  	this.rows = 4;
+  	this.columns = (numEconomySeats + numFirstClassSeats) / rows;
+  	this.seatLayout = new String[columns][rows];
+  	initSeatLayout(rows, columns, numFirstClassSeats);
   }
 	/** @return number of economy seats*/
 	public int getNumSeats()
@@ -57,14 +67,48 @@ public class Aircraft implements Comparable<Aircraft>
 		this.model = model;
 	}
 	/** prints the description of the aircraft*/
+
+	public String[][] getSeatLayout(){
+		return seatLayout;
+	}
+
+	public int getRows() {
+		return rows;
+	}
+
+	public void setRows(int rows) {
+		this.rows = rows;
+	}
+
+	public int getColumns() {
+		return columns;
+	}
+
+	public void setColumns(int columns) {
+		this.columns = columns;
+	}
+
 	public void print()
 	{
 		System.out.println("Model: " + model + "\t Economy Seats: " + numEconomySeats + "\t First Class Seats: " + numFirstClassSeats);
 	}
 
-	/*
-	 * Write a compareTo method that is part of the Comparable interface
-	 */
+	public void initSeatLayout(int rows, int columns, int numFirstClass){
+		String[] alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+		for (int i = 0; i < columns; i++){
+			for (int u = 0; u < rows; u++){
+				if (numFirstClass > 0){
+					seatLayout[i][u] =("+")+ (i + 1) + alphabet[u];
+				}
+				else {
+					seatLayout[i][u] = (i + 1) + alphabet[u];
+				}
+				numFirstClass --;
+			}
+
+		}
+	}
+
 	/**
 	 * compareTo method fom comparable interface which compares itself with another Aircraft
 	 * @param o other Aircraft

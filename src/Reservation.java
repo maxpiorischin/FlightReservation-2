@@ -32,16 +32,7 @@ public class Reservation
 		this.passenger = passenger;
 		this.passengerName = passenger.getName();
 		this.passengerPassport = passenger.getPassport();
-	}
-	public Reservation(String flightNum, String info, Passenger passenger, String seat)
-	{
-		this.flightNum = flightNum;
-		this.flightInfo = info;
-		this.firstClass = false;
-		this.passenger = passenger;
-		this.passengerName = passenger.getName();
-		this.passengerPassport = passenger.getPassport();
-		this.seat = seat;
+		this.seat = passenger.getSeat();
 	}
 	
 	public boolean isFirstClass()

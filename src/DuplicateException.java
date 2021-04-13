@@ -4,7 +4,8 @@
  * passes the message to the super class
  * */
 public class DuplicateException extends Exception{
-    public DuplicateException(){
-        super("Passenger already exists!");
+
+    public DuplicateException(String item){
+        super(item + " already exists!");
     }
 }
