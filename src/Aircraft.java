@@ -14,7 +14,7 @@ public class Aircraft implements Comparable<Aircraft>
   int numFirstClassSeats;
   
   String model;
-  String[][] seatLayout;
+  String[][] seatLayout; //2d array of seats
   int rows;
   int columns;
   
@@ -70,7 +70,7 @@ public class Aircraft implements Comparable<Aircraft>
 
 	public String[][] getSeatLayout(){
 		return seatLayout;
-	}
+	} //gets seat layout
 
 	public int getRows() {
 		return rows;
@@ -93,17 +93,25 @@ public class Aircraft implements Comparable<Aircraft>
 		System.out.println("Model: " + model + "\t Economy Seats: " + numEconomySeats + "\t First Class Seats: " + numFirstClassSeats);
 	}
 
+	/**
+	 * Creates the seat layout 2d array during the constructor execution
+	 * iterates through column amount and uses the value for the seat number
+	 * iterates through row amount and also uses that number as an index to get the specified letter from the alphabet
+	 * @param rows how many rows should be created
+	 * @param columns how many columns should be created
+	 * @param numFirstClass number is used to add the + in the first class seats at the head of the plane
+	 */
 	public void initSeatLayout(int rows, int columns, int numFirstClass){
-		String[] alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-		for (int i = 0; i < columns; i++){
-			for (int u = 0; u < rows; u++){
-				if (numFirstClass > 0){
-					seatLayout[i][u] =("+")+ (i + 1) + alphabet[u];
+		String[] alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""); //uses alphabet but only from A-D for 4 seaters
+		for (int i = 0; i < columns; i++){ //loop through columns
+			for (int u = 0; u < rows; u++){ //loop through rows
+				if (numFirstClass > 0){ //if there is still first class passenger seats that need to be created
+					seatLayout[i][u] =(i + 1) + alphabet[u] + ("+"); //create the seat number with a +
+					numFirstClass --; //decrements amount of first class seats left to be made
 				}
 				else {
-					seatLayout[i][u] = (i + 1) + alphabet[u];
+					seatLayout[i][u] = (i + 1) + alphabet[u]; //create seat without a +
 				}
-				numFirstClass --;
 			}
 
 		}

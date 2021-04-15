@@ -54,8 +54,7 @@ public class FlightReservationSystem
 			/**
 			 * get flightnum, firstname, lastname, passport number from scanner
 			 * concatenate first and last name
-			 * try creating a reservation and adding to myreservations
-			 * catch any exceptions and print their message
+			 * call method resSeat to resere the seat with info inputted
 			 * */
 			else if (action.equalsIgnoreCase("RES")) // todo change this command to res, comment all useless code out
 			{
@@ -165,12 +164,22 @@ public class FlightReservationSystem
 			System.out.print("\n>");
 		}
 	}
+
+	/**
+	 * try creating a reservation and adding to myreservations
+	 * catch any exceptions and print their message
+	 * @param flightNum the flight number
+	 * @param name name of the passenger
+	 * @param passport passport of the passenger
+	 * @param seatType seat type which is either economy or firstclass
+	 * @param seat seat number
+	 */
 	public static void resSeat(String flightNum, String name, int passport, String seatType, String seat){ // shortcut method for reserving a seat
 		try {
-			Reservation reservation = manager.reserveSeatOnFlightPSNGR(flightNum, name, passport, seatType, seat);
+			Reservation reservation = manager.reserveSeatOnFlight(flightNum, name, passport, seatType, seat);
 			myReservations.add(reservation);
 			reservation.print();
-		} catch (FlightFullException | FlightNotFoundException | DuplicateException | InvalidSeatException f) {
+		} catch (FlightFullException | FlightNotFoundException | DuplicatePassengerException | InvalidSeatException | SeatOccupiedException f) {
 			System.out.println(f.getMessage());
 		}
 	}
@@ -179,7 +188,7 @@ public class FlightReservationSystem
 		boolean exists = false;
 		for (Reservation reservation : myReservations) {
 			if (reservation.getFlightNum().equals(flightNum) && name.equals(reservation.getPassenger().getName()) && passport == reservation.getPassenger().getPassport()) {
-				manager.cancelReservationPSNGR(reservation, passport, name);
+				manager.cancelReservation(reservation, passport, name);
 				myReservations.remove(reservation);
 				exists = true;
 				break;
@@ -188,9 +197,9 @@ public class FlightReservationSystem
 		}
 		try {
 			if (!exists) {
-				throw new ReservationNotFoundException();
+				throw new PassengerNotInManifestException(name, passport);
 			}
-		} catch (ReservationNotFoundException e) {
+		} catch (PassengerNotInManifestException e) {
 			System.out.println(e.getMessage());
 		}
 	}

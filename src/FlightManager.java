@@ -23,13 +23,14 @@ public class FlightManager
   
   public FlightManager() {
 
-      // Create some aircraft types with max seat capacities
+      // Creates some aircraft types with max seat capacities divisible by 4
       airplanes.add(new Aircraft(12, "Bombardier 5000"));
       airplanes.add(new Aircraft(88, "Boeing 737"));
       airplanes.add(new Aircraft(160, "Airbus 320"));
       airplanes.add(new Aircraft(36, "Dash-8 100"));
       airplanes.add(new Aircraft(444, 16, "Boeing 747"));
 
+      // adds times to the flightmap
       flightTimeMap.put("DALLAS", 3);
       flightTimeMap.put("NEWYORK", 1);
       flightTimeMap.put("LONDON", 7);
@@ -41,25 +42,25 @@ public class FlightManager
       Flight flight;
       Aircraft airplaneToUse = null;
       try {
-          Scanner scanner = new Scanner(new File("src\\flights.txt"));
+          Scanner scanner = new Scanner(new File("src\\flights.txt")); // creates a scanner to the file in src/flights.txt
           while (scanner.hasNextLine()) {
-              String line = scanner.nextLine();
-              Scanner lineScanner = new Scanner(line);
+              String line = scanner.nextLine(); //gets the entire line from the scanner
+              Scanner lineScanner = new Scanner(line); //creates a new scanner for just inside the line
               String airline = lineScanner.next().replaceAll("_", " ");
-              String des = lineScanner.next().replaceAll("_", " ");
-              String dep = lineScanner.next();
-              String capacity = lineScanner.next();
-              int dur = flightTimeMap.get(des.replaceAll(" ", "").toUpperCase());
+              String des = lineScanner.next().replaceAll("_", " "); // replaces underscore with spaces
+              String dep = lineScanner.next(); //gets departure location
+              String capacity = lineScanner.next(); //gets minimum capacity amount
+              int dur = flightTimeMap.get(des.replaceAll(" ", "").toUpperCase()); // gets duration by searching through flight time map with the given destination
 
-              flightNum = generateFlightNumber(airline);
-              if (dur > 10) { //todo check what durarion is considered long haul
-                  for (Aircraft aircraft : airplanes){
+              flightNum = generateFlightNumber(airline); //generates random flight num with the method
+              if (dur >= 10) { // a longhaul flight
+                  for (Aircraft aircraft : airplanes){ //iterate through aircrafts to choose a suitable aircraft with enough seats, and checks if it has first class seats
                       if (aircraft.getNumSeats() > Integer.parseInt(capacity) && aircraft.getNumFirstClassSeats() > 0){// find an aircraft with first class seats
-                          airplaneToUse = aircraft;
+                          airplaneToUse = aircraft; //sets the airplane to use variable
                           break;
                       }
                   }
-                  flight = new LongHaulFlight(flightNum, airline, des, dep, dur, airplaneToUse);
+                  flight = new LongHaulFlight(flightNum, airline, des, dep, dur, airplaneToUse); //creates a lonhaul flight object
               }
               else{
                   for (Aircraft aircraft : airplanes){
@@ -68,12 +69,12 @@ public class FlightManager
                           break;
                       }
                   }
-                  flight = new Flight(flightNum, airline, des, dep, dur, airplaneToUse);
+                  flight = new Flight(flightNum, airline, des, dep, dur, airplaneToUse); // creates a regular flight
               }
-              flights.put(flightNum, flight);
+              flights.put(flightNum, flight); //adds the flight to the flights map
           }
       }
-      catch (FileNotFoundException f){
+      catch (FileNotFoundException f){ //prints the message if the file is not found, but it should always be found
           System.out.println(f.getMessage());
       }
   }
@@ -98,10 +99,8 @@ public class FlightManager
       return name + (random.nextInt(199) + 101);
   }
 
-  // Prints all flights in flights array list (see class Flight toString() method) 
-  // This one is done for you!
     /**
-     * Prints all the flights in the flights Arraylist
+     * Prints all the flights in the flights map, by iterating through the keyset
      * */
   public void printAllFlights()
   {
@@ -110,20 +109,21 @@ public class FlightManager
       }
   }
 
+    /**
+     * prints the manifest by iterating through the flights and printing the manifest for the specified one
+     * @param flightnum //the flight's flightnumber
+     */
   public void printManifest(String flightnum){
       for (String key : flights.keySet()){
           Flight flight = flights.get(key);
           if (flight.getFlightNum().equals(flightnum)){
-              for (Passenger passenger : flight.getManifest()){
-                  System.out.println(passenger.toManifString());
-              }
+              flight.printPassengerManifest();
           }
       }
   }
-  
-  // Given a flight number (e.g. "UA220"), check to see if there are economy seats available
-  // if so return true, if not return false
+
     /**
+     * **OLD METHOD**
      *Checks if seats are available by using the flightnumber to iterate through the flights and find the flight,
      * uses the .seatsAvailable() method from the Flight class to detemine if there are any available
      * @param flightNum used to find flight
@@ -153,10 +153,12 @@ public class FlightManager
      * @param passport used in creating Passenger
      * @throws FlightFullException if flight is full
      * @throws FlightNotFoundException if flight is not found
-     * @throws DuplicateException if a duplicate passenger is found
+     * @throws DuplicatePassengerException if a duplicate passenger is found
+     * @throws InvalidSeatException if the seat being reserved is not paty of the seat layout
+     * @throws SeatOccupiedException if the seat is already occupied
      * @return reservation with parameters flightnum and flight.toString()
      * */
-  public Reservation reserveSeatOnFlightPSNGR(String flightNum, String name, int passport, String seatType, String seat) throws FlightFullException, FlightNotFoundException, DuplicateException, InvalidSeatException {
+  public Reservation reserveSeatOnFlight(String flightNum, String name, int passport, String seatType, String seat) throws FlightFullException, FlightNotFoundException, DuplicatePassengerException, InvalidSeatException, SeatOccupiedException {
       for (String key : flights.keySet()){
           Flight flight = flights.get(key);
             if (flight.getFlightNum().equals(flightNum)) {
@@ -175,7 +177,7 @@ public class FlightManager
                                 }
 
                             } else {
-                                throw new DuplicateException("Passenger");
+                                throw new DuplicatePassengerException(passenger);
                             }
                         } else { //economy seat
                             if (flight.seatsAvailable()) {
@@ -183,7 +185,7 @@ public class FlightManager
                                 if (flight.reserveSeat(passenger)) {
                                     return new Reservation(flightNum, flight.toString() + " " + passenger.toString(), passenger);
                                 } else {
-                                    throw new DuplicateException("Passenger");
+                                    throw new DuplicatePassengerException(passenger);
                                 }
                             } else {
                                 throw new FlightFullException(flightNum);
@@ -195,7 +197,7 @@ public class FlightManager
                     }
                 }
                 else{
-                    throw new DuplicateException("Seat " + seat);
+                    throw new SeatOccupiedException(seat);
                 }
             }
             }
@@ -211,7 +213,7 @@ public class FlightManager
      * @param passport for cancelseatPSNGR
      * @return true if successful
      * */
-    public boolean cancelReservationPSNGR(Reservation res, int passport, String name) {
+    public boolean cancelReservation(Reservation res, int passport, String name) {
         for (String key : flights.keySet()){
             Flight flight = flights.get(key);
             if (flight.getFlightNum().equals(res.getFlightNum())) {
@@ -220,7 +222,7 @@ public class FlightManager
                     longflight.cancelSeat(LongHaulFlight.firstClass, passport, name);
                 }
                 else {
-                    flight.cancelSeatPSNGR(passport, name);
+                    flight.cancelSeat(passport, name);
                 }
                 return true;
             }
@@ -230,11 +232,16 @@ public class FlightManager
 
     public void printSeats(String flightnum) throws FlightNotFoundException {
         boolean found = false;
+        int counter = 0;
         for (String key : flights.keySet()) {
             Flight flight = flights.get(key);
             if (flight.getFlightNum().equals(flightnum)){
-                for (int i = 0; i < flight.getAircraft().getColumns(); i ++){
-                    for (int u = 0; u < flight.getAircraft().getRows(); u++){
+                for (int u = 0; u < flight.getAircraft().getRows(); u++){
+                    counter += 1;
+                    if (counter == 3){ //checks if counter reached 3 different additions, which prints a blank line for formatting
+                        System.out.println();
+                    }
+                    for (int i = 0; i < flight.getAircraft().getColumns(); i ++){
                         String seat = (flight.getAircraft().getSeatLayout()[i][u]);
                         if (isDuplicateSeat(seat, flight)){
                             System.out.print("XX ");
@@ -252,6 +259,7 @@ public class FlightManager
         if (!found){
             throw new FlightNotFoundException();
         }
+        System.out.println(); //formatting
         System.out.println("XX = Occupied    + = First Class");
 
     }

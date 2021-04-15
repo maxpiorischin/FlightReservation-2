@@ -92,7 +92,7 @@ public class LongHaulFlight extends Flight
 					}
 				}
 			} else {
-				super.cancelSeatPSNGR(passport, name);
+				super.cancelSeat(passport, name);
 			}
 		}
 	// return the total passenger count of economy passengers *and* first class passengers

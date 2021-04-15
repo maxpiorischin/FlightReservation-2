@@ -39,7 +39,6 @@ public class Flight
 		this.manifest = new ArrayList<>();
 		this.seatMap = new TreeMap<>();
 
-		// write code to initialize instance variables to default values
 	}
 
 
@@ -158,12 +157,13 @@ public class Flight
 	}
 
 	/**
-	 * Cancels a seat and removes passenger from arraylist, by comparing name and passport passed in with iterated iterated list of passengers
+	 * Cancels a seat and removes passenger from the manifest and seatmap, by comparing name and passport passed in with iterated iterated list of passengers
+	 * decrements passenger count
 	 * @param passport passport to use in finding the Passenger
 	 * @param name name to use in finding the passenger
 	 *
 	 * */
-	public void cancelSeatPSNGR(int passport, String name) // todo FINISH BY REMOVing FROM MAP
+	public void cancelSeat(int passport, String name)
 	{
 
 		if (passengers > 0) {
@@ -179,9 +179,9 @@ public class Flight
 	}
 
 	/**
-	 *Reserves a seat but with a passenger
-	 * adds 1 to passengers
-	 * @param passenger passenger object to add to passengerList
+	 *Reserves a seat with a passenger
+	 * adds 1 to passengers, adds the passenger to manifest and seatMap
+	 * @param passenger passenger object to add to manifest
 	 * @return true is successful
 	 * */
 	public boolean reserveSeat(Passenger passenger) // with passenger info
@@ -200,10 +200,10 @@ public class Flight
 	}
 
 	/**
-	 * Checks if there already exists a passenger in the passengerlist
-	 * Iterates through passengerlist and uses passenger.equals(other passenger) to compare
+	 * Checks if there already exists a passenger in the manifest
+	 * Iterates through manifest and uses passenger.equals(other passenger) to compare
 	 * @param p Passenger object that is used to check if a duplicate of it exists in the list
-	 * @return true if the p passed in is not in the arraylist, false if its already in it
+	 * @return true if the p passed in is not in the manifest, false if its already in it
 	 * */
 	public boolean noDuplicate(Passenger p){
 		for (Passenger passenger : manifest){
@@ -212,6 +212,15 @@ public class Flight
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * iterates through the manifest and calls .toManifString to print the passenger in the correct format
+	 */
+	public void printPassengerManifest(){
+		for (Passenger passenger : this.getManifest()){
+			System.out.println(passenger.toManifString());
+		}
 	}
 	/**
 	 * String which describes the object
