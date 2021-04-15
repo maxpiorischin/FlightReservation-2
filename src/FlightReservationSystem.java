@@ -82,7 +82,8 @@ public class FlightReservationSystem
 			// Query the flight manager to see if seats are still available for a specific flight (example input: seats AC220)
 		  // This one is done for you as a guide for other commands
 			/**
-			 * get flightnum from scannerm use manager.seatsavailable() with flightnum parameter
+			 * get flightnum from scanner use manager.seatsavailable() with flightnum parameter
+			 * catches a FlightNotFound exception if a flight with the flight number doesn't exist
 			 * */
 			else if (action.equalsIgnoreCase("SEATS"))
 			{
@@ -135,6 +136,9 @@ public class FlightReservationSystem
 				}
 			}
 
+			/**
+			 * gets the flight number from the commandline, and calls the printManifset method from flight manager
+			 */
 			else if (action.equalsIgnoreCase("PASMAN")){
 				if (commandLine.hasNext()){
 					String flightNum = commandLine.next();
@@ -145,14 +149,12 @@ public class FlightReservationSystem
 
 
 
-			// Print the list of aircraft (see class Manager)
+			// Print the list of aircraft (class Manager)
 			else if (action.equalsIgnoreCase("CRAFT"))
 		  {
 			  manager.printAllAircraft();
 			}
-			// These commands can be left until we study Java interfaces
-			// Feel free to implement the code in class Manager if you already understand interface Comparable
-			// and interface Comparator
+
 			/**
 			 * Sorts activate the manager.sortBy method
 			 * */
@@ -184,6 +186,14 @@ public class FlightReservationSystem
 		}
 	}
 
+	/**
+	 * search through reservatiuons for a reservation with a valid flightnum, and a matching name and passport
+	 * call manager.cancelreservation() with the reservation and details, and then remove the reservation from the arraylist of reservation
+	 * uses exists variable to check if a matching reservation was found, if not, it throws a PassengerNotInManifest exception and prints its message
+	 * @param flightNum used to find the reservation
+	 * @param name used to find the reservation
+	 * @param passport used to find the reservation
+	 */
 	public static void cancSeat(String flightNum, String name, int passport){
 		boolean exists = false;
 		for (Reservation reservation : myReservations) {

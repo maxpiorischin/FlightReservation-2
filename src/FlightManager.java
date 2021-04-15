@@ -230,40 +230,52 @@ public class FlightManager
         return false;
     }
 
+    /**
+     * iterates through the flights map keyset, and prints the seatlayour 2d array inside of the aircraft.
+     * When a reserved seat is detected during the iteration using the duplicateSeat method , it gets replaced with "XX"
+     * @param flightnum  flight's flight number
+     * @throws FlightNotFoundException  gets thrown if a matching flight is not found
+     */
     public void printSeats(String flightnum) throws FlightNotFoundException {
-        boolean found = false;
+        boolean found = false; //used to check if a matching flight was ever found
         int counter = 0;
-        for (String key : flights.keySet()) {
+        for (String key : flights.keySet()) { //iterate through flights map
             Flight flight = flights.get(key);
-            if (flight.getFlightNum().equals(flightnum)){
-                for (int u = 0; u < flight.getAircraft().getRows(); u++){
+            if (flight.getFlightNum().equals(flightnum)){ //flight in iteration is matching to the flighnumber
+                for (int u = 0; u < flight.getAircraft().getRows(); u++){ //first 2d array iteration
                     counter += 1;
                     if (counter == 3){ //checks if counter reached 3 different additions, which prints a blank line for formatting
                         System.out.println();
                     }
-                    for (int i = 0; i < flight.getAircraft().getColumns(); i ++){
-                        String seat = (flight.getAircraft().getSeatLayout()[i][u]);
-                        if (isDuplicateSeat(seat, flight)){
+                    for (int i = 0; i < flight.getAircraft().getColumns(); i ++){ //second level of iteration
+                        String seat = (flight.getAircraft().getSeatLayout()[i][u]); //gets the seat at the iteration point
+                        if (isDuplicateSeat(seat, flight)){ //if the seat is occupied, prints XX
                             System.out.print("XX ");
                         }
-                        else{
+                        else{ //otherwise, prints the seat value
                             System.out.print(seat + " ");
                         }
 
                     }
-                    System.out.println();
+                    System.out.println(); //line for formatting
                 }
             }
             found = true;
         }
-        if (!found){
+        if (!found){ //if a flight isnt found, throws the exception
             throw new FlightNotFoundException();
         }
         System.out.println(); //formatting
         System.out.println("XX = Occupied    + = First Class");
 
     }
-
+    /**
+     * checks if the seat already exists
+     * iterates through the flight seatmap keyset, if the key of the flight is matching, returns true.
+     * @param seat
+     * @param flight
+     * @return true if matching key is found, false otherwise
+     */
     public boolean isDuplicateSeat(String seat, Flight flight){
         for (String key : flight.seatMap.keySet()){
             if (key.equalsIgnoreCase(seat)){
@@ -272,6 +284,13 @@ public class FlightManager
         }
         return false;
     }
+
+    /**
+     * iterates through all of the seat layout, and finds if there is a seat name valid seat name for the given parameter
+     * @param seat seat to look for
+     * @param flight  flight to look through
+     * @return  true if the seat exists, false otehrwise
+     */
     public boolean validSeat(String seat, Flight flight){
         String[][] arr = flight.getAircraft().getSeatLayout();
         for (String[] arr1 : arr){

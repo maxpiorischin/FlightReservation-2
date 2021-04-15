@@ -1,4 +1,4 @@
-/** This Exception is thrown when a seat attempted to reserve is invalid
+/** This Exception is thrown when a seat attempted to be reserved is invalid, and doesnt exist in the airacraft's seatLayout
  */
 
 public class InvalidSeatException extends Exception{

@@ -17,13 +17,14 @@ public class Reservation
 	int passengerPassport;
 	String seat;
 	
-	
+	//default
 	public Reservation(String flightNum, String info)
 	{
 		this.flightNum = flightNum;
 		this.flightInfo = info;
 		this.firstClass = false;
 	}
+
 	public Reservation(String flightNum, String info, Passenger passenger)
 	{
 		this.flightNum = flightNum;

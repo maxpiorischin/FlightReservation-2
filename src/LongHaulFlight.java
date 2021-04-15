@@ -10,9 +10,18 @@ public class LongHaulFlight extends Flight
 	
 	// Possible seat types
 	public static final String firstClass = "First Class Seat";
-	public static final String economy 		= "Economy Seat";  
-	
+	public static final String economy 		= "Economy Seat";
 
+
+	/**
+	 * constructor which initializes all the poarameters in the superclass
+	 * @param flightNum
+	 * @param airline
+	 * @param dest
+	 * @param departure
+	 * @param flightDuration
+	 * @param aircraft
+	 */
 	public LongHaulFlight(String flightNum, String airline, String dest, String departure, int flightDuration, Aircraft aircraft)
 	{
 		super(flightNum, airline, dest, departure, flightDuration, aircraft);
@@ -50,6 +59,7 @@ public class LongHaulFlight extends Flight
 	/**
 	 * if economy seat, call super() to flight
 	 * if first class, check if seats available and add 1 to firstclasspassengers
+	 * add passenger to manifset and seatmap
 	 * @return true if successful
 	 * */
 	public boolean reserveSeat(String seatType, Passenger passenger)
@@ -71,15 +81,18 @@ public class LongHaulFlight extends Flight
 
 
 	/**
+	 * search through passengers in manifest, and find one matching
+	 * there will always be a matching passenger, since in order for this method to be called, a valid reservation with this passenger should have already been found
 	 * if firstclass, decrease firstclasspassengers by 1
 	 * if economy, decrease passengers by 1
+	 * remove passenger from manifset and seatmap
+	 * @param seatType economy or first class
+	 * @param name name of passenger
+	 * @param passport passport of passenger
 	 * */
 	public void cancelSeat(String seatType, int passport, String name)
 	{
-		// if seat type is first class and first class passenger count is > 0
-		//  decrement first class passengers
-		// else
-		// decrement inherited (economy) passenger count
+
 
 			if (seatType.equals(firstClass) && numFirstClassPassengers > 0) {
 
