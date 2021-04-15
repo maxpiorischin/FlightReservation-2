@@ -93,11 +93,10 @@ public class LongHaulFlight extends Flight
 	public void cancelSeat(String seatType, int passport, String name)
 	{
 
-
 			if (seatType.equals(firstClass) && numFirstClassPassengers > 0) {
-
+				Passenger comparePassenger = new Passenger(name, passport, "TEMP"); //a passenger object for comparing
 				for (Passenger passenger : manifest){
-					if (passenger.getPassport() == passport && passenger.getName().equals(name)){
+					if (passenger.equals(comparePassenger)){
 						manifest.remove(passenger);
 						seatMap.remove(passenger.getSeat());
 						numFirstClassPassengers -= 1;

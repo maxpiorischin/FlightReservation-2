@@ -165,10 +165,10 @@ public class Flight
 	 * */
 	public void cancelSeat(int passport, String name)
 	{
-		//Passenger comparePassenger = new Passenger(name, passport, "TEMP");
+		Passenger comparePassenger = new Passenger(name, passport, "TEMP");
 		if (passengers > 0) {
 			for (Passenger passenger : manifest){
-				if (passenger.getPassport() == passport && passenger.getName().equals(name)){
+				if (passenger.equals(comparePassenger)){
 					manifest.remove(passenger);
 					seatMap.remove(passenger.getSeat());
 					passengers -= 1;

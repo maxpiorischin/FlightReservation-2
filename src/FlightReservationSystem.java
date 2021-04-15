@@ -196,8 +196,9 @@ public class FlightReservationSystem
 	 */
 	public static void cancSeat(String flightNum, String name, int passport){
 		boolean exists = false;
+		Reservation compareReservation = new Reservation(name, passport, flightNum);
 		for (Reservation reservation : myReservations) {
-			if (reservation.getFlightNum().equals(flightNum) && name.equals(reservation.getPassenger().getName()) && passport == reservation.getPassenger().getPassport()) {
+			if (reservation.equals(compareReservation)) {
 				manager.cancelReservation(reservation, passport, name);
 				myReservations.remove(reservation);
 				exists = true;

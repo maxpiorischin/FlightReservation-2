@@ -24,7 +24,12 @@ public class Reservation
 		this.flightInfo = info;
 		this.firstClass = false;
 	}
-
+	// constructor for temporary reservations used for comparing
+	public Reservation(String passengerName, int passengerPassport, String flightnum){
+		this.passengerName = passengerName;
+		this.passengerPassport = passengerPassport;
+		this.flightNum = flightnum;
+	}
 	public Reservation(String flightNum, String info, Passenger passenger)
 	{
 		this.flightNum = flightNum;
