@@ -24,10 +24,10 @@ public class FlightManager
   public FlightManager() {
 
       // Create some aircraft types with max seat capacities
+      airplanes.add(new Aircraft(12, "Bombardier 5000"));
       airplanes.add(new Aircraft(88, "Boeing 737"));
       airplanes.add(new Aircraft(160, "Airbus 320"));
       airplanes.add(new Aircraft(36, "Dash-8 100"));
-      airplanes.add(new Aircraft(12, "Bombardier 5000"));
       airplanes.add(new Aircraft(444, 16, "Boeing 747"));
 
       flightTimeMap.put("DALLAS", 3);
@@ -195,7 +195,7 @@ public class FlightManager
                     }
                 }
                 else{
-                    throw new DuplicateException("Seat");
+                    throw new DuplicateException("Seat " + seat);
                 }
             }
             }
