@@ -1,12 +1,16 @@
 // Maxim Piorischin 501015327
+
+import java.util.Comparator;
+
 /**
  * Passenger has a name, passport, seatnum
  * initialize them based off of what was passed in
  * */
-public class Passenger {
+public class Passenger implements Comparable<Passenger> {
     private String name;
     private int passport;
     private String seat;
+    private boolean boarded = false;
     public Passenger(String name, int passport, String seat){
         this.name = name;
         this.passport = passport;
@@ -24,6 +28,9 @@ public class Passenger {
     public String getSeat(){
         return seat;
     }
+    public void setBoarded(boolean boarded){
+        this.boarded = boarded;
+    }
 
     /**
      * equals method which checks if 2 Passengers are the same with name and passport
@@ -35,6 +42,17 @@ public class Passenger {
         }
         return false;
     }
+
+    /**
+     * Used for comparing to another passenger in the priority queue
+     * @param p other passenger to compare
+     * @return return 1 if greater than, -1 if less than, 0 is equal
+     */
+    @Override
+    public int compareTo(Passenger p) {
+        return this.getSeat().compareTo(p.getSeat());
+    }
+
     /**
      * method which returns a string of object information
      * */
@@ -42,7 +60,13 @@ public class Passenger {
         return "Name: "+ this.name + " Passport Number: " + this.passport + " Seat Number: " + this.seat;
     }
 
+    /**
+     * a toString method but for the pasman command
+     * @return a string for PASMAN with required details
+     */
     public String toManifString(){
         return this.name + " " + this.passport + " " + this.seat;
     }
+
+
 }

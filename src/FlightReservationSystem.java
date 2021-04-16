@@ -145,9 +145,51 @@ public class FlightReservationSystem
 					manager.printManifest(flightNum);
 				}
 			}
+			/**
+			 * Calls the passenger queue initialization method in flight manager
+			 * if the queue was already initialized, it will throw an exception which is caught here.
+			 */
+			else if (action.equalsIgnoreCase("PREBOARD")){
+				try {
+					if (commandLine.hasNext()) {
+						String flightNum = commandLine.next();
+						manager.initPassengerQueueForFlight(flightNum);
+					}
 
-
-
+				} catch (PassengerQueueInvalidException e) {
+					System.out.println(e.getMessage());
+				}
+			}
+			/**
+			 * gets the flight number from the commandline, and calls the manager.printPassengerQueueForFlight with it
+			 */
+			else if (action.equalsIgnoreCase("QUEUE")){
+					if (commandLine.hasNext()) {
+						String flightNum = commandLine.next();
+						manager.printPassengerQueueForFlight(flightNum);
+					}
+			}
+			/**
+			 * Gets the flight number, starting row, end row, and calls the boardflight method in manager
+			 * catches no such element exception if the scanner input is invalid, and passengerqueueinvalidexception if
+			 * there is an issue with the passenger queue
+			 */
+			else if (action.equalsIgnoreCase("BOARD")){
+				if (commandLine.hasNext()) {
+					try {
+						String flightNum = commandLine.next();
+						int startRow = commandLine.nextInt();
+						int endRow = commandLine.nextInt();
+						manager.boardFlight(flightNum, startRow, endRow);
+					}
+					catch (NoSuchElementException e){
+						System.out.println("Invalid Information, Format must be >Board flightnumber startrow endrow");
+					}
+					catch (PassengerQueueInvalidException e){
+						System.out.println(e.getMessage());
+					}
+				}
+			}
 
 			// Print the list of aircraft (class Manager)
 			else if (action.equalsIgnoreCase("CRAFT"))

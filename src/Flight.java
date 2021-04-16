@@ -1,5 +1,7 @@
 //Maxim Piorischin 501015327
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.PriorityQueue;
 import java.util.TreeMap;
 
 /*
@@ -10,7 +12,7 @@ import java.util.TreeMap;
 public class Flight
 {
 	public enum Status {DELAYED, ONTIME, ARRIVED, INFLIGHT};
-	public enum FlightType {SHORTHAUL, MEDIUMHAUL, LONHAUL};
+	public enum FlightType {SHORTHAUL, MEDIUMHAUL, LONGHAUL};
 
 	public String flightNum;
 	public String airline;
@@ -22,6 +24,7 @@ public class Flight
 	protected int passengers; // count of (economy) passengers on this flight - initially 0
 	protected ArrayList<Passenger> manifest;
 	protected TreeMap<String, Passenger> seatMap;
+	protected PriorityQueue<Passenger> passengerQueue;
 	public FlightType flightType;
   
 	public Flight()
@@ -38,6 +41,7 @@ public class Flight
 		this.flightType = FlightType.MEDIUMHAUL;
 		this.manifest = new ArrayList<>();
 		this.seatMap = new TreeMap<>();
+		this.passengerQueue = new PriorityQueue<>();
 
 	}
 
@@ -56,6 +60,7 @@ public class Flight
 		this.flightType = FlightType.MEDIUMHAUL;
 		this.manifest = new ArrayList<>(); // Arraylist holding all the Passenger objects
 		this.seatMap = new TreeMap<>();
+		this.passengerQueue = new PriorityQueue<>();
 		
 	}
 	// Getter and setter Methods
@@ -215,10 +220,46 @@ public class Flight
 	}
 
 	/**
+	 * called from flightmanager to create the passenger priority queue
+	 * adds each passenger in the manifest into the queue
+	 */
+	public void initPassengerQueue(){
+		for (Passenger passenger : manifest){
+			passengerQueue.add(passenger);
+		}
+	}
+
+	/**
+	 * iterates through the queue, boards each passenger, changes their boarding status, and sets the plane inflight afterwards
+	 * uses regex to get the row number from the seat number
+	 * checks if seat us in the requyired range
+	 * @param startRow starting row to be boarded
+	 * @param endRow ending row to be boarded
+	 */
+	public void board(int startRow, int endRow) throws PassengerQueueInvalidException {
+		if (passengerQueue.isEmpty()){
+			throw new PassengerQueueInvalidException("No passengers have been preboarded");
+		}
+		Iterator<Passenger> iterator = passengerQueue.iterator();
+		while (iterator.hasNext()){
+			Passenger passenger = iterator.next();
+			String seat = passenger.getSeat();
+
+			int passRow = Integer.parseInt(seat.replaceAll("\\D", "")); //just the number in the seat is stored
+
+			if (startRow<= passRow && passRow <= endRow){ //checks if the seat is within the given range
+				passenger.setBoarded(true);
+				iterator.remove();
+			}
+		}
+		this.setStatus(Status.INFLIGHT);
+	}
+
+	/**
 	 * iterates through the manifest and calls .toManifString to print the passenger in the correct format
 	 */
 	public void printPassengerManifest(){
-		for (Passenger passenger : this.getManifest()){
+		for (Passenger passenger : manifest){
 			System.out.println(passenger.toManifString());
 		}
 	}
@@ -226,6 +267,9 @@ public class Flight
 	 * String which describes the object
 	 * @return a string of the flight description
 	 * */
+	public void printPassengerQueue(){
+		System.out.println(passengerQueue.toString());
+	}
 	public String toString()
 	{
 		 return airline + "\t Flight:  " + flightNum + "\t Dest: " + dest + "\t Departing: " + departureTime + "\t Duration: " + flightDuration + "\t Status: " + status;

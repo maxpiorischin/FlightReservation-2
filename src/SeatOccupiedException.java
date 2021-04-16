@@ -1,3 +1,4 @@
+//Maxim Piorischin 501015327
 /**
  * Exception gets called when a seat attempted to be reserved is already occupied
  */

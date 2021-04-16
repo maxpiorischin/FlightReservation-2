@@ -6,15 +6,13 @@ import java.util.*;
 
 public class FlightManager
 {
-  // Contains list of Flights departing from Toronto in a single day
+  // Contains map of Flights departing from Toronto in a single day
   Map<String, Flight> flights = new TreeMap<>();
   
   String[] cities = 	{"Dallas", "New York", "London", "Paris", "Tokyo"};
 
   Map<String, Integer> flightTimeMap = new HashMap<>(); //Using a map to set the times for each flight duration! Destination name is the key, and the duration is the value.
-  
 
-  
   // Contains list of available airplane types and their seat capacity
   ArrayList<Aircraft> airplanes = new ArrayList<Aircraft>();
   
@@ -324,5 +322,55 @@ public class FlightManager
   {
   	Collections.sort(airplanes);
   }
+
+    /**
+     * finds a matching flight in the flights map, calls initpassengerqueue on the flight
+     *
+     * @param flightnum flight number to be found
+     * @throws PassengerQueueInvalidException if the queue was already initialized
+     */
+  public void initPassengerQueueForFlight(String flightnum) throws PassengerQueueInvalidException {
+      for (String key : flights.keySet()){
+          if (key.equalsIgnoreCase(flightnum)){
+              if (flights.get(key).passengerQueue.isEmpty()) {
+                  flights.get(key).initPassengerQueue();
+              }
+              else{
+                  throw new PassengerQueueInvalidException("Passenger Queue already initialized");
+              }
+          }
+      }
+  }
+
+    /**
+     * searches through flights for a valid flight with the flightnumber, calls the printpassengerqueue method on it
+     * @param flightnum flight number to be found
+     */
+  public void printPassengerQueueForFlight(String flightnum) {
+      for (String key : flights.keySet()) {
+          if (key.equalsIgnoreCase(flightnum)) {
+            flights.get(key).printPassengerQueue();
+          }
+      }
+  }
+
+    /**
+     * finds valid flight with flight number, calls the board() method on the flight with the row interval
+     * @param flightnum flight number to be found
+     * @param startRow start of the interval
+     * @param endRow end of the interval
+     * @throws PassengerQueueInvalidException if no passengers have been preboarded (from flight.board)
+     */
+  public void boardFlight(String flightnum, int startRow, int endRow) throws PassengerQueueInvalidException {
+      for (String key : flights.keySet()) {
+          if (key.equalsIgnoreCase(flightnum)) {
+              Flight flight = flights.get(key);
+              flight.board(startRow, endRow);
+
+
+          }
+      }
+  }
+
 
 }

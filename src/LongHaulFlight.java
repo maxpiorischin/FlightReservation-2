@@ -26,7 +26,7 @@ public class LongHaulFlight extends Flight
 	{
 		super(flightNum, airline, dest, departure, flightDuration, aircraft);
 		numFirstClassPassengers = 0;
-		super.setFlightType(FlightType.LONHAUL);
+		super.setFlightType(FlightType.LONGHAUL);
 		// use the super() call to initialize all inherited variables
 		// also initialize the new instance variables 
 	}
@@ -35,7 +35,7 @@ public class LongHaulFlight extends Flight
 	{
      // default constructor
 		super();
-		super.setFlightType(FlightType.LONHAUL);
+		super.setFlightType(FlightType.LONGHAUL);
 		numFirstClassPassengers = 0;
 	}
 	

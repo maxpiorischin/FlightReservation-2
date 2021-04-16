@@ -1,12 +1,4 @@
 //Maxim Piorischin 501015327
-/*
- * 
- * This class models an aircraft type with a model name, a maximum number of economy seats, and a max number of forst class seats 
- * 
- * Add code such that class Aircraft implements the Comparable interface
- * Compare two Aircraft objects by first comparing the number of economy seats. If the number is equal, then compare the
- * number of first class seats 
- */
 
 public class Aircraft implements Comparable<Aircraft>
 {
