@@ -5,7 +5,8 @@ This assignment includes
 
 - File I/O
 - Customized error exceptions
-- Data structures (Map, Queue)
+- Data structures (Map, Queue, Set, Arrays)
 - Inheritance
 - Polymorphism
+- Interface usage
 - Javadocs comments
